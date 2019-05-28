@@ -18,7 +18,7 @@ parser.add_argument("-r","--relation_dim",type = int, default = 8)
 parser.add_argument("-w","--class_num",type = int, default = 5)
 parser.add_argument("-s","--support_num_per_class",type = int, default = 1)
 parser.add_argument("-b","--query_num_per_class",type = int, default = 2)
-parser.add_argument("-e","--episode",type = int, default= 50000)
+parser.add_argument("-e","--episode",type = int, default = 100)
 parser.add_argument("-t","--query_episode", type = int, default = 1000)
 parser.add_argument("-l","--learning_rate", type = float, default = 0.0001)
 parser.add_argument("-g","--gpu",type=int, default=0)
@@ -69,12 +69,8 @@ def weights_init(m):
         m.bias.data = torch.ones(m.bias.data.size())
 
 def main():
-    # Step 1: init data folders
-    print("init data folders")
-    # init character folders for dataset construction
     metatrain_folders,metaquery_folders = tg.mini_imagenet_folders()
 
-    # Step 2: init neural networks
     print("init neural networks")
 
     feature_encoder = models.FeatureEncoder().apply(weights_init).cuda(GPU)
@@ -101,69 +97,10 @@ def main():
     best_h = 0.0
             
     for episode in range(EPISODE):
-        feature_encoder_scheduler.step(episode)
-        relation_network_scheduler.step(episode)
-
-        # init dataset
-        # support_dataloader is to obtain previous supports for compare
-        # query_dataloader is to query supports for training
-        task = tg.MiniImagenetTask(metatrain_folders,CLASS_NUM,SUPPORT_NUM_PER_CLASS,QUERY_NUM_PER_CLASS)
-        support_dataloader = tg.get_mini_imagenet_data_loader(task,num_per_class=SUPPORT_NUM_PER_CLASS,split="train",shuffle=False)
-        query_dataloader = tg.get_mini_imagenet_data_loader(task,num_per_class=QUERY_NUM_PER_CLASS,split="test",shuffle=True)
-
-        # support datas
-        supports,support_labels = support_dataloader.__iter__().next()
-        queries,query_labels = query_dataloader.__iter__().next()
-        
-        # calculate features
-        support_features = feature_encoder(Variable(supports).cuda(GPU)).view(CLASS_NUM,SUPPORT_NUM_PER_CLASS,64,19**2).sum(1) # 5x64*19*19
-        query_features = feature_encoder(Variable(queries).cuda(GPU)).view(QUERY_NUM_PER_CLASS*CLASS_NUM,64,19**2) # 20x64*19*19
-        H_support_features = Variable(torch.Tensor(SUPPORT_NUM_PER_CLASS*CLASS_NUM, 1, 64, 64)).cuda(GPU)
-        H_query_features = Variable(torch.Tensor(QUERY_NUM_PER_CLASS*CLASS_NUM, 1, 64, 64)).cuda(GPU)
-        # HOP features
-        for d in range(support_features.size()[0]):
-            s = support_features[d,:,:].squeeze(0)                        
-            s = s - LAMBDA * s.mean(1).repeat(1,s.size()[1]).view(s.size())
-            s = (1 / support_features.size()[2]) * s.mm(s.transpose(0,1))
-            H_support_features[d,:,:,:] = power_norm(s / s.trace(), SIGMA)
-        for d in range(query_features.size()[0]):
-            s = query_features[d,:,:].squeeze(0)
-            s = s - LAMBDA * s.mean(1).repeat(1,s.size()[1]).view(s.size())
-            s = (1 / query_features.size()[2]) * s.mm(s.transpose(0,1))
-            H_query_features[d,:,:,:] = power_norm(s / s.trace(), SIGMA)
-
-        # form relation pairs
-        support_features_ext = H_support_features.unsqueeze(0).repeat(QUERY_NUM_PER_CLASS*CLASS_NUM,1,1,1,1)
-        query_features_ext = H_query_features.unsqueeze(0).repeat(CLASS_NUM,1,1,1,1)
-        query_features_ext = torch.transpose(query_features_ext,0,1)
-        relation_pairs = torch.cat((support_features_ext,query_features_ext),2).view(-1,2,64,64)
-        # calculate relation scores
-        relations = relation_network(relation_pairs).view(-1,CLASS_NUM*SUPPORT_NUM_PER_CLASS)
-
-        # define loss function
-        mse = nn.MSELoss().cuda(GPU)
-        one_hot_labels = Variable(torch.zeros(QUERY_NUM_PER_CLASS*CLASS_NUM, CLASS_NUM).scatter_(1, query_labels.view(-1,1), 1)).cuda(GPU)
-        loss = mse(relations,one_hot_labels)
-
-        # updating network parameters with their gradients
-        feature_encoder.zero_grad()
-        relation_network.zero_grad()
-
-        loss.backward()
-
-        feature_encoder_optim.step()
-        relation_network_optim.step()
-
-        if (episode+1)%100 == 0:
-                print("episode:",episode+1,"loss",loss.data[0])
-
-        if episode%500 == 0:
-            # query
+        with torch.no_grad():
             print("Testing...")
-            
             accuracies = []
-            for i in range(TEST_EPISODE):
-              with torch.no_grad():
+            for i in range(TEST_EPISODE):           
                 total_rewards = 0
                 counter = 0
                 task = tg.MiniImagenetTask(metaquery_folders,CLASS_NUM,1,2)
@@ -177,7 +114,7 @@ def main():
                     support_features = feature_encoder(Variable(support_images).cuda(GPU)).view(CLASS_NUM,SUPPORT_NUM_PER_CLASS,64,19**2).sum(1) 
                     query_features = feature_encoder(Variable(query_images).cuda(GPU)).view(num_per_class*CLASS_NUM,64,19**2) 
                     
-                    H_support_features = Variable(torch.Tensor(SUPPORT_NUM_PER_CLASS*CLASS_NUM, 1, 64, 64)).cuda(GPU)
+                    H_support_features = Variable(torch.Tensor(CLASS_NUM, 1, 64, 64)).cuda(GPU)
                     H_query_features = Variable(torch.Tensor(num_per_class*CLASS_NUM, 1, 64, 64)).cuda(GPU)
                     # HOP features
                     for d in range(support_features.size()[0]):
@@ -210,15 +147,10 @@ def main():
 
             test_accuracy,h = mean_confidence_interval(accuracies)
 
-            print("Test accuracy:", test_accuracy,"h:",h)
+            print("Test accuracy:", test_accuracy,"h:", h)
             print("Best accuracy: ", best_accuracy, "h:", best_h)
 
             if test_accuracy > best_accuracy:
-                # save networks
-                torch.save(feature_encoder.state_dict(),str(METHOD + "/feature_encoder_" + str(CLASS_NUM) +"way_" + str(SUPPORT_NUM_PER_CLASS) +"shot.pkl"))
-                torch.save(relation_network.state_dict(),str(METHOD + "/relation_network_"+ str(CLASS_NUM) +"way_" + str(SUPPORT_NUM_PER_CLASS) +"shot.pkl"))
-                print("save networks for episode:",episode)
-
                 best_accuracy = test_accuracy
                 best_h = h
 
