@@ -133,7 +133,7 @@ def main():
 
                     query_features_ext = H_query_features.unsqueeze(0).repeat(1*CLASS_NUM,1,1,1,1)
                     query_features_ext = torch.transpose(query_features_ext,0,1)
-                    relation_pairs = torch.cat((SIGMA*support_features_ext,SIGMA*query_features_ext),2).view(-1,2,64,64)
+                    relation_pairs = torch.cat((support_features_ext, query_features_ext),2).view(-1,2,64,64)
                     relations = relation_network(relation_pairs).view(-1,CLASS_NUM)
 
                     _,predict_labels = torch.max(relations.data,1)

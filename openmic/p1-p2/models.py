@@ -30,7 +30,8 @@ class FeatureEncoder(nn.Module):
         out = self.layer2(out)
         out = self.layer3(out)
         out = self.layer4(out)
-        return out
+        #out = out.view(out.size(0),-1)
+        return out # 64
 
 class SimilarityNetwork(nn.Module):
     """docstring for RelationNetwork"""

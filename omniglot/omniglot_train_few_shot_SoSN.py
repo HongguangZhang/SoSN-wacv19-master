@@ -112,7 +112,7 @@ def main():
         degrees = random.choice([0,90,180,270])
         task = tg.OmniglotTask(metatrain_character_folders,CLASS_NUM,SUPPORT_NUM_PER_CLASS,QUERY_NUM_PER_CLASS)
         support_dataloader = tg.get_data_loader(task,num_per_class=SUPPORT_NUM_PER_CLASS,split="train",shuffle=False,rotation=degrees)
-        query_dataloader = tg.get_data_loader(task,num_per_class=QUERY_NUM_PER_CLASS,split="query",shuffle=True,rotation=degrees)
+        query_dataloader = tg.get_data_loader(task,num_per_class=QUERY_NUM_PER_CLASS,split="test",shuffle=True,rotation=degrees)
 
 
         # support datas
@@ -140,7 +140,7 @@ def main():
         support_features_ext = H_support_features.unsqueeze(0).repeat(QUERY_NUM_PER_CLASS*CLASS_NUM,1,1,1,1)
         query_features_ext = H_query_features.unsqueeze(0).repeat(CLASS_NUM,1,1,1,1)
         query_features_ext = torch.transpose(query_features_ext,0,1)
-        relation_pairs = torch.cat((SIGMA*support_features_ext,SIGMA*query_features_ext),2).view(-1,2,64,64)
+        relation_pairs = torch.cat((support_features_ext, query_features_ext),2).view(-1,2,64,64)
         # calculate relation scores
         relations = relation_network(relation_pairs).view(-1,CLASS_NUM)
 
@@ -171,7 +171,7 @@ def main():
                 degrees = random.choice([0,90,180,270])
                 task = tg.OmniglotTask(metaquery_character_folders,CLASS_NUM,SUPPORT_NUM_PER_CLASS,TEST_NUM_PER_CLASS,)
                 support_dataloader = tg.get_data_loader(task,num_per_class=SUPPORT_NUM_PER_CLASS,split="train",shuffle=False,rotation=degrees)
-                query_dataloader = tg.get_data_loader(task,num_per_class=TEST_NUM_PER_CLASS,split="query",shuffle=True,rotation=degrees)
+                query_dataloader = tg.get_data_loader(task,num_per_class=TEST_NUM_PER_CLASS,split="test",shuffle=True,rotation=degrees)
 
                 support_images,support_labels = support_dataloader.__iter__().next()
                 query_images,query_labels = query_dataloader.__iter__().next()
