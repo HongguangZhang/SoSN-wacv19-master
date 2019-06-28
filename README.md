@@ -3,6 +3,9 @@
 Pytorch Implementation of IEEE WACV2019 "Power Normalizing Second-order Similarity Network for Few-shot Learning".
 This is based on the code of Relation Net.
 
+Download OpenMIC dataset with following links:
+https://drive.google.com/file/d/1Me9XB2wn9acqZ69pe2S8VcHoYgD0Pxgv/view?usp=sharing
+
 ![Pipline of SoSN](docs/sosn.png)
 
 __Requires.__
