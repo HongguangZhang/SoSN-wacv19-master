@@ -6,9 +6,9 @@ This is based on the code of Relation Net.
 Download formatted miniImagenet:<br/>
 https://drive.google.com/file/d/1QhUs2uwEbVqCVig6B6cQmI0WTdYy2C9t/view?usp=sharing<br/>
 
-Download OpenMIC dataset with following links:<br/>
+Download pre-processed OpenMIC dataset with following links:<br/>
 [Protocol I] https://drive.google.com/file/d/1Me9XB2wn9acqZ69pe2S8VcHoYgD0Pxgv/view?usp=sharing<br/>
-[Protocol II] 
+[Protocol II] https://drive.google.com/file/d/1CauC-lt_IEUjFZG8YyioW4dUnxbWBaA1/view?usp=sharing<br/>
 
 Decompress the downloaded datasets into '/datas'. <br/>
 If you have any problem with the code, please contact hongguang.zhang@anu.edu.au. <br/>
