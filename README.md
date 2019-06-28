@@ -10,7 +10,8 @@ Download OpenMIC dataset with following links:<br/>
 [Protocol I] https://drive.google.com/file/d/1Me9XB2wn9acqZ69pe2S8VcHoYgD0Pxgv/view?usp=sharing<br/>
 [Protocol II] 
 
-If you have any problem with the code, please contact hongguang.zhang@anu.edu.au.
+Decompress the downloaded datasets into '/datas'. <br/>
+If you have any problem with the code, please contact hongguang.zhang@anu.edu.au. <br/>
 
 ![Pipline of SoSN](docs/sosn.png)
 
