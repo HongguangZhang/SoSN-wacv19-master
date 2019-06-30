@@ -200,7 +200,7 @@ def main():
                     total_rewards += np.sum(rewards)
                     counter += query_size
 		
-                accuracy = total_rewards/1.0/CLASS_NUM/counter
+                accuracy = total_rewards/1.0/counter
                 accuracies.append(accuracy)
 
 
