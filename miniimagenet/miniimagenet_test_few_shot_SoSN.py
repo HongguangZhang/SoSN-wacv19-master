@@ -104,6 +104,7 @@ def main():
             accuracies = []
             for i in range(TEST_EPISODE):
                 total_rewards = 0
+		counter = 0
                 task = tg.MiniImagenetTask(metatest_folders,CLASS_NUM,SUPPORT_NUM_PER_CLASS,15)
                 support_dataloader = tg.get_mini_imagenet_data_loader(task,num_per_class=SUPPORT_NUM_PER_CLASS,split="train",shuffle=False)
                 num_per_class = 5
@@ -141,8 +142,9 @@ def main():
                     rewards = [1 if predict_labels[j]==query_labels[j].cuda(GPU) else 0 for j in range(query_size)]
 
                     total_rewards += np.sum(rewards)
-
-                accuracy = total_rewards/1.0/CLASS_NUM/15
+                    counter += query_size
+		
+                accuracy = total_rewards/1.0/counter
                 accuracies.append(accuracy)
 
 
