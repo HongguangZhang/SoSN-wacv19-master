@@ -122,11 +122,11 @@ def main():
                     
                     for d in range(support_features.size()[0]):
                         s = support_features[d,:,:].squeeze(0)
-                        s = (1 / support_features.size()[2]) * s.mm(s.transpose(0,1))
+                        s = (1.0 / support_features.size()[2]) * s.mm(s.transpose(0,1))
                         H_support_features[d,:,:,:] = power_norm(s / s.trace(), SIGMA)
                     for d in range(query_features.size()[0]):
                         s = query_features[d,:,:].squeeze(0)
-                        s = (1 / query_features.size()[2]) * s.mm(s.transpose(0,1))
+                        s = (1.0 / query_features.size()[2]) * s.mm(s.transpose(0,1))
                         H_query_features[d,:,:,:] = power_norm(s / s.trace(), SIGMA)
 
 
