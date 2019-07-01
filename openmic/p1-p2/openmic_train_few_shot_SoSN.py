@@ -195,7 +195,7 @@ def main():
                     support_features_ext = H_support_features.unsqueeze(0).repeat(query_size,1,1,1,1)
                     query_features_ext = H_query_features.unsqueeze(0).repeat(1*CLASS_NUM,1,1,1,1)
                     query_features_ext = torch.transpose(query_features_ext,0,1)
-                    relation_pairs = torch.cat((SIGMA*support_features_ext,SIGMA*query_features_ext),2).view(-1,2,64,64)
+                    relation_pairs = torch.cat((support_features_ext,query_features_ext),2).view(-1,2,64,64)
                     # calculate relation scores
                     relations = relation_network(relation_pairs).view(-1,CLASS_NUM)
 
