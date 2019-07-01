@@ -31,6 +31,7 @@ python miniimagenet_test_few_shot_SoSN.py -w 5 -s 1 -sigma 100
 ```
 
 ## Citation
+```
 @inproceedings{zhang2019power,
   title={Power normalizing second-order similarity network for few-shot learning},
   author={Zhang, Hongguang and Koniusz, Piotr},
@@ -39,3 +40,4 @@ python miniimagenet_test_few_shot_SoSN.py -w 5 -s 1 -sigma 100
   year={2019},
   organization={IEEE}
 }
+```
