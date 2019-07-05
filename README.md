@@ -1,4 +1,4 @@
-# SoSN-wacv19-master
+# Power Normalizing Second-order Similarity Network for Few-shot Learning
 
 Pytorch Implementation of IEEE WACV2019 "[Power Normalizing Second-order Similarity Network for Few-shot Learning](https://arxiv.org/pdf/1811.04167.pdf)".
 This is based on the code of Relation Net.
